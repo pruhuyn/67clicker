@@ -135,7 +135,7 @@ MiscSection:Toggle({
             while _G.autoEggDelete do
                 local args = {
                     "67 mustard egg",
-                    3
+                    4
                 }
                 ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Egg"):InvokeServer(unpack(args))
                 task.wait(1)
