@@ -1,0 +1,141 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local defaultSpeed = 16
+local speed = 31
+local enabled = false
+
+
+
+
+
+local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Rain-Design/Libraries/main/Shaman/Library.lua'))()
+local Flags = Library.Flags
+
+local Window = Library:Window({
+    Text = "pruhhub | 67 Clicker"
+})
+
+local Tab = Window:Tab({
+    Text = "Main"
+})
+
+local Tab2 = Window:Tab({
+    Text = "Movement"
+})
+
+local Tab3 = Window:Tab({
+	Text = "Misc"
+})
+
+local MiscSection = Tab3:Section({
+	Text = "test"
+})
+
+local SpeedSection = Tab2:Section({
+    Text = "Speed"
+})
+
+local Section = Tab:Section({
+    Text = "Farm"
+})
+
+local Section2 = Tab:Section({
+    Text = "test"
+})
+
+Section:Toggle({
+    Text = "AutoClicker (better OP)",
+    Tooltip = "FASSSTTTTT.",
+    Callback = function(s)
+        _G.autoclicker = s
+		while _G.autoclicker do
+			game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Clicker"):FireServer()
+task.wait()
+		end
+    end
+})
+
+Section:Toggle({
+    Text = "AutoRebith",
+    Tooltip = "just autorebith",
+    Callback = function(sa)
+        _G.autorebith = sa
+		while _G.autorebith do
+			game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Rebirth"):FireServer()
+task.wait()
+		end
+    end
+})
+
+Section2:Button({
+    Text = "SimpleSpy",
+    Tooltip = "Just a SimpleSpy.",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/78n/SimpleSpy/refs/heads/main/SimpleSpyBeta.lua"))()
+    end
+})
+
+if player.Character and player.Character:FindFirstChild("Humanoid") then
+    defaultSpeed = player.Character.Humanoid.WalkSpeed
+end
+
+SpeedSection:Slider({
+    Text = "Speed",
+    Default = speed,
+    Minimum = 1,
+    Maximum = 100,
+    Flag = "SliderFlag",
+    Callback = function(v)
+        speed = v
+    end
+})
+
+SpeedSection:Toggle({
+    Text = "Enable Speed",
+    Default = false,
+    Flag = "ToggleFlag",
+    Callback = function(v)
+        enabled = v
+        if not enabled then
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.WalkSpeed = defaultSpeed
+            end
+        end
+    end
+})
+
+RunService.Heartbeat:Connect(function()
+    if enabled and player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.WalkSpeed = speed
+    end
+end)
+
+player.CharacterAdded:Connect(function(char)
+    wait(0.1)
+    if char:FindFirstChild("Humanoid") then
+        if enabled then
+            char.Humanoid.WalkSpeed = speed
+        else
+            char.Humanoid.WalkSpeed = defaultSpeed
+        end
+    end
+end)
+
+MiscSection:Button({
+    Text = "Open admin abuse egg",
+    Tooltip = "imbaaaa.",
+    Callback = function()
+        local args = {
+	"67 mustard egg",
+	1
+}
+game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Egg"):InvokeServer(unpack(args))
+    end
+})
+
+Tab:Select()
+
+wait(5)
+
+a:Set(true)
