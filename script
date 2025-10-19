@@ -1,13 +1,10 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 local defaultSpeed = 16
 local speed = 31
 local enabled = false
-
-
-
-
 
 local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Rain-Design/Libraries/main/Shaman/Library.lua'))()
 local Flags = Library.Flags
@@ -50,8 +47,8 @@ Section:Toggle({
     Callback = function(s)
         _G.autoclicker = s
 		while _G.autoclicker do
-			game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Clicker"):FireServer()
-task.wait()
+			ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Clicker"):FireServer()
+            task.wait()
 		end
     end
 })
@@ -62,8 +59,8 @@ Section:Toggle({
     Callback = function(sa)
         _G.autorebith = sa
 		while _G.autorebith do
-			game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Rebirth"):FireServer()
-task.wait()
+			ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Rebirth"):FireServer()
+            task.wait()
 		end
     end
 })
@@ -84,7 +81,7 @@ SpeedSection:Slider({
     Text = "Speed",
     Default = speed,
     Minimum = 1,
-    Maximum = 100,
+    Maximum = 1000,
     Flag = "SliderFlag",
     Callback = function(v)
         speed = v
@@ -122,20 +119,118 @@ player.CharacterAdded:Connect(function(char)
     end
 end)
 
-MiscSection:Button({
-    Text = "Open admin abuse egg",
-    Tooltip = "imbaaaa.",
-    Callback = function()
-        local args = {
-	"67 mustard egg",
-	1
+local targetPets = {
+    ["Secret Admin Abuse 1"] = true,
+    ["Secret Admin Abuse 2"] = true,
+    ["Secret Admin Abuse 3"] = true
 }
-game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Egg"):InvokeServer(unpack(args))
+
+MiscSection:Toggle({
+    Text = "Auto Admin Abuse Egg",
+    Tooltip = "Авто открытие яйца и удаление ненужных питомцев",
+    Default = false,
+    Callback = function(enabled)
+        _G.autoEggDelete = enabled
+        spawn(function()
+            while _G.autoEggDelete do
+                local args = {
+                    "67 mustard egg",
+                    3
+                }
+                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Egg"):InvokeServer(unpack(args))
+                task.wait(1)
+
+                local PetsFolder = player:WaitForChild("Data"):WaitForChild("Pets")
+                if #PetsFolder:GetChildren() > 200 then
+                    for _, pet in pairs(PetsFolder:GetChildren()) do
+                        local petNameObj = pet:FindFirstChild("PetName")
+                        if petNameObj then
+                            local petName = petNameObj.Value
+                            local petID = tonumber(pet.Name)
+                            if targetPets[petName] then
+                                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Pet"):FireServer("Delete", petID)
+                                task.wait()
+                            end
+                        end
+                    end
+                end
+
+                task.wait(1)
+            end
+        end)
+    end
+})
+
+-- Автотелепорт к Gifts с прыжком по мирам
+local autoTPEnabled = false
+local tpTime = 1
+local tpOriginalCFrame = nil
+local worlds = {"World 1","World 2","World 3","World 4","World 5"}
+
+Section:Toggle({
+    Text = "Auto Teleport to Gifts",
+    Tooltip = "Телепорт к объектам в workspace.Gifts",
+    Default = false,
+    Callback = function(v)
+        autoTPEnabled = v
+        local char = player.Character or player.CharacterAdded:Wait()
+        local hrp = char:WaitForChild("HumanoidRootPart")
+        if autoTPEnabled then
+            tpOriginalCFrame = hrp.CFrame
+            spawn(function()
+                while autoTPEnabled do
+                    local giftsFolder = workspace:FindFirstChild("Gifts")
+                    if giftsFolder and #giftsFolder:GetChildren() > 0 then
+                        for _, gift in pairs(giftsFolder:GetChildren()) do
+                            if not autoTPEnabled then break end
+                            local startCFrame = hrp.CFrame
+                            local endCFrame = gift.CFrame + Vector3.new(0,3,0)
+                            local elapsed = 0
+                            while elapsed < tpTime and autoTPEnabled do
+                                hrp.CFrame = startCFrame:Lerp(endCFrame, elapsed / tpTime)
+                                elapsed = elapsed + RunService.RenderStepped:Wait()
+                            end
+                            hrp.CFrame = endCFrame
+                            task.wait(0.2)
+                        end
+                    else
+                        for _, world in pairs(worlds) do
+                            if not autoTPEnabled then break end
+                            local args = {world}
+                            ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeWorld"):FireServer(unpack(args))
+                            task.wait(2)
+                            break
+                        end
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        else
+            if tpOriginalCFrame then
+                local startCFrame = hrp.CFrame
+                local endCFrame = tpOriginalCFrame
+                local elapsed = 0
+                while elapsed < tpTime do
+                    hrp.CFrame = startCFrame:Lerp(endCFrame, elapsed / tpTime)
+                    elapsed = elapsed + RunService.RenderStepped:Wait()
+                end
+                hrp.CFrame = endCFrame
+            end
+        end
+    end
+})
+
+Section:Slider({
+    Text = "Teleport Duration (seconds)",
+    Default = 1,
+    Minimum = 0.1,
+    Maximum = 5,
+    Flag = "TPTimeSlider",
+    Callback = function(v)
+        tpTime = v
     end
 })
 
 Tab:Select()
-
 wait(5)
-
 a:Set(true)
