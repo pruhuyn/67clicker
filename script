@@ -73,6 +73,14 @@ Section2:Button({
     end
 })
 
+Section2:Button({
+    Text = "Dex",
+    Tooltip = "Just a Dex.",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/BigBoyTimme/New.Loadstring.Scripts/refs/heads/main/Dex.Explorer"))()
+    end
+})
+
 if player.Character and player.Character:FindFirstChild("Humanoid") then
     defaultSpeed = player.Character.Humanoid.WalkSpeed
 end
